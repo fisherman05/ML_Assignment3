@@ -84,9 +84,9 @@ def generateFolds(trainValidation_seeds, trainValidation_labels):
     return (trainSeeds,validateSeeds,trainLabels, validateLabels)
 
 """ K-NN Classifiers """
-euclideanClassifier_Btree_uniform_KA = KNeighborsClassifier(n_neighbors=3, algorithm = 'ball_tree', weights='uniform', p=2)
-euclideanClassifier_Btree_uniform_KB = KNeighborsClassifier(n_neighbors=20, algorithm = 'ball_tree', weights='uniform', p=2)
-euclideanClassifier_Btree_uniform_KC = KNeighborsClassifier(n_neighbors=70, algorithm = 'ball_tree', weights='uniform', p=2)
+euclideanClassifier_Btree_uniform_KA = KNeighborsClassifier(n_neighbors=3, algorithm = 'kd_tree', weights='uniform', p=1)
+euclideanClassifier_Btree_uniform_KB = KNeighborsClassifier(n_neighbors=20, algorithm = 'kd_tree', weights='uniform', p=1)
+euclideanClassifier_Btree_uniform_KC = KNeighborsClassifier(n_neighbors=70, algorithm = 'kd_tree', weights='uniform', p=1)
 
 manhattanClassifier_Btree_distance_KA = KNeighborsClassifier(n_neighbors=3, algorithm = 'ball_tree', weights='distance', p=1)
 manhattanClassifier_Btree_distance_KB = KNeighborsClassifier(n_neighbors=20, algorithm = 'ball_tree', weights='distance', p=1)
@@ -99,6 +99,9 @@ euclideanClassifier_KDtree_uniform_KC = KNeighborsClassifier(n_neighbors=70, alg
 manhattanClassifier_KDtree_distance_KA = KNeighborsClassifier(n_neighbors=3, algorithm = 'kd_tree', weights='distance', p=1)
 manhattanClassifier_KDtree_distance_KB = KNeighborsClassifier(n_neighbors=20, algorithm = 'kd_tree', weights='distance', p=1)
 manhattanClassifier_KDtree_distance_KC = KNeighborsClassifier(n_neighbors=70, algorithm = 'kd_tree', weights='distance', p=1)
+
+
+
 
 
 def labelsPrediction(model, setup):
@@ -309,14 +312,27 @@ zScore_setup5 = (trainSeeds[4], validateSeeds[4], trainLabels[4], validateLabels
 
 
 
+finalModel = KNeighborsClassifier(n_neighbors=3, algorithm = 'kd_tree', weights='uniform', p=1)
+finalSetup = (zScoreSeeds_trainValidation, zScoreSeeds_test, trainValidation_labels, test_labels)
+predicted = labelsPrediction(finalModel, finalSetup)
+
 #Plot Generator from dataset
-def plotTrainingGenerator(seeds, labels, normalizationMethodLabel): #data will be a list of cars
+def plotTrainingGenerator(seeds, labels, testSeeds, testLabels, normalizationMethodLabel): #data will be a list of cars
     f1_1 = []
     f2_1 = []
     f1_2 = []
     f2_2 = []
     f1_3 = []
     f2_3 = []
+    
+    
+    tf1_1 = []
+    tf2_1 = []
+    tf1_2 = []
+    tf2_2 = []
+    tf1_3 = []
+    tf2_3 = [] 
+    
     i = 0
     while (i < len(seeds)):
         if  labels[i] == 1:
@@ -330,13 +346,31 @@ def plotTrainingGenerator(seeds, labels, normalizationMethodLabel): #data will b
             f2_3.append(seeds[i][1])
         i += 1
         
+    i = 0
+    while (i < len(testSeeds)):
+        if  testLabels[i] == 1:
+            tf1_1.append(testSeeds[i][0])
+            tf2_1.append(testSeeds[i][1])
+        elif testLabels[i] == 2:
+            tf1_2.append(testSeeds[i][0])
+            tf2_2.append(testSeeds[i][1])
+        elif testLabels[i] == 3:
+            tf1_3.append(testSeeds[i][0])
+            tf2_3.append(testSeeds[i][1])
+        i += 1
+        
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.scatter(f1_1, f2_1,s=10, c='b', marker="o", label='Kama [Training]')
     ax1.scatter(f1_2,f2_2, s=10, c='r', marker="o", label = 'Rosa [Training]')
     ax1.scatter(f1_3, f2_3,s=10, c='g', marker="o", label = 'Canadian [Training]')
+    ax1.scatter(tf1_1, tf2_1,s=10, c='b', marker="s", label='Kama [Test]')
+    ax1.scatter(tf1_2,tf2_2, s=10, c='r', marker="s", label = 'Rosa [Test]')
+    ax1.scatter(tf1_3, tf2_3,s=10, c='g', marker="s", label = 'Canadian [Test]')
     plt.legend(loc='lower right')
     plt.title('Seeds: Training Dataset [Normalization: '+normalizationMethodLabel+']', fontweight="bold")
     plt.xlabel('Feature 1: Seed Area')
     plt.ylabel('Feature 2: Kernel Width')
     plt.show()
+
+finalPlot = plotTrainingGenerator(zScoreSeeds_trainValidation, trainValidation_labels, zScoreSeeds_test, predicted[3], 'z-Score')
